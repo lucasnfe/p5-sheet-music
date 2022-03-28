@@ -24,15 +24,15 @@ function setup() {
 
   // Create Menu
   menu = new Menu(MENU_X, MENU_Y, mainWidth, MENU_HEIGHT);
-  menu.createTextButton('>', 1, play);
-  menu.createImgButton("imgs/1n.png", 3, setCurrentNote1n);
-  menu.createImgButton("imgs/2n.png", 4, setCurrentNote2n);
-  menu.createImgButton("imgs/4n.png", 5, setCurrentNote4n);
-  menu.createImgButton("imgs/8n.png", 6, setCurrentNote8n);
-  menu.createImgButton("imgs/16n.png", 7, setCurrentNote16n);
-  menu.createImgButton("imgs/32n.png", 8, setCurrentNote32n);
-  menu.createImgButton("imgs/sharp.png", 9, toggleSharp);
-  menu.createImgButton("imgs/flat.png", 10, toggleFlat);
+  menu.createImgButton('imgs/play.png', 0.75, play);
+  menu.createImgButton('imgs/1n.png', 3, setCurrentNote1n);
+  menu.createImgButton('imgs/2n.png', 4, setCurrentNote2n);
+  menu.createImgButton('imgs/4n.png', 5, setCurrentNote4n);
+  menu.createImgButton('imgs/8n.png', 6, setCurrentNote8n);
+  menu.createImgButton('imgs/16n.png', 7, setCurrentNote16n);
+  menu.createImgButton('imgs/32n.png', 8, setCurrentNote32n);
+  menu.createImgButton('imgs/sharp.png', 9, toggleSharp);
+  menu.createImgButton('imgs/flat.png', 10, toggleFlat);
 
   // Create staff
   staff = new Staff(STAFF_X, STAFF_Y, mainWidth,
