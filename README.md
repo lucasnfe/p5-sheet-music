@@ -15,6 +15,7 @@ implemented to make it as ufeul as I want it to be.
 - Display measures in custom locations.
 - Display measure number.
 - Display and edit tempo (bpm).
+- Highligh a note when it is played.
 - Add/Remove staff.
 - Join two staffs to make a grand staff. 
 - Read constants from a json config file.
