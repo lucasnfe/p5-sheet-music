@@ -120,9 +120,33 @@ class Staff {
     }
   }
 
+  sortedIndex(array, value) {
+  	let low = 0;
+  	let high = array.length;
+
+  	while (low < high) {
+  		var mid = low + high >>> 1;
+  		if (array[mid] < value) low = mid + 1;
+  		else high = mid;
+  	}
+
+  	return low;
+  }
+
+
   addNote(x, y, value, accidental) {
+    // Add note sorted by x position
+    let low = 0;
+    let high = this.notes.length;
+
+    while (low < high) {
+      var mid = low + high >>> 1;
+      if (this.notes[mid].x < x) low = mid + 1;
+      else high = mid;
+    }
+
     let note = new Note(x, y, staff.canvasPos2Pitch(y), value, accidental);
-    this.notes.push(note);
+    this.notes.splice(low, 0, note);
   }
 
   isInHorizontalBoundaries(x) {
