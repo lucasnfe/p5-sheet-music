@@ -10,7 +10,8 @@ implemented to make it as ufeul as I want it to be.
 
 - Connect 8th, 16th, and 32nd notes with beam.
 - Edit clef, time signature, and notes on the staff.
-- Draw measures in custom locations.
-- Draw measure number.
+- Display measures in custom locations.
+- Display measure number.
+- Display and edit tempo (bpm).
 - Add/Remove staff.
 - Join two staffs to make a grand staff. 
