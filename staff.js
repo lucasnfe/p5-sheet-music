@@ -1,33 +1,34 @@
-const STAFF_SPACE_HEIGHT = 10;
-
-const CLEF_OFFSET_X = 10;
-const CLEF_OFFSET_Y = 32;
-const CLEF_SIZE = 34;
-
-const TIME_SIGNATURE_OFFSET_X = 0;
-const TIME_SIGNATURE_OFFSET_Y = 37;
-const TIME_SIGNATURE_SIZE = 34;
-
-const C_MAJOR = [59, 60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 79, 81, 83, 84];
 
 class Staff {
-  constructor(x, y, width, n_lines, n_bars, clef, time_signature) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
+  constructor(staffConfig, noteConfig) {
+    // Copy staff properties
+    this.x = staffConfig.x;
+    this.y = staffConfig.y;
+    this.width = staffConfig.width;
+    this.nLines = staffConfig.nlines;
+    this.scale = staffConfig.scale;
 
-    this.n_lines = n_lines;
-    this.n_bars = n_bars;
+    this.clef = staffConfig.clef.type;
+    this.clefSize = staffConfig.clef.size;
+    this.clefOffset = staffConfig.clef.offset;
 
-    this.clef = clef;
-    this.time_signature = time_signature;
+    this.timeSignature = staffConfig.timeSignature.type;
+    this.timeSignatureSize = staffConfig.timeSignature.size;
+    this.timeSignatureOffset = staffConfig.timeSignature.offset;
+
+    // Copy note properties
+    this.noteSize = noteConfig.size;
+    this.noteOffset = noteConfig.offset;
+    this.accidentalOffsetX = noteConfig.accidentalOffsetX;
+
+    // Compute staff boundaries
+    this.spaceHeight = staffConfig.spaceHeight;
+    this.horDrawableStart = this.x + this.clefOffset.x + this.clefSize + this.timeSignatureOffset.x + this.timeSignatureSize;
+    this.horDrawableEnd   = this.x + this.width;
+    this.verDrawableStart = this.y - 1.5 * this.spaceHeight;
+    this.verDrawableEnd   = this.y + (this.nLines + 1) * this.spaceHeight;
 
     this.notes = [];
-
-    this.horDrawableStart = this.x + CLEF_OFFSET_X + CLEF_SIZE + TIME_SIGNATURE_OFFSET_X + TIME_SIGNATURE_SIZE;
-    this.horDrawableEnd = this.x + this.width;
-    this.verDrawableStart = this.y - 1.5 * STAFF_SPACE_HEIGHT;
-    this.verDrawableEnd = this.y + (this.n_lines + 1) * STAFF_SPACE_HEIGHT;
   }
 
   draw() {
@@ -50,34 +51,29 @@ class Staff {
   }
 
   drawClef() {
-    textSize(CLEF_SIZE);
+    textSize(this.clefSize);
     switch (this.clef) {
       case "treble":
-        text('', this.x + CLEF_OFFSET_X, this.y + CLEF_OFFSET_Y);
+        text('', this.x + this.clefOffset.x, this.y + this.clefOffset.y);
         break;
-      default:
     }
   }
 
   drawTimeSignature() {
-    textSize(TIME_SIGNATURE_SIZE);
-    switch (this.time_signature) {
+    textSize(this.timeSignatureSize);
+    switch (this.timeSignature) {
       case "4/4":
-        text('', this.x + CLEF_OFFSET_X + CLEF_SIZE + TIME_SIGNATURE_OFFSET_X,
-                  this.y + TIME_SIGNATURE_OFFSET_Y);
+        text('', this.x + this.clefOffset.x + this.clefSize + this.timeSignatureOffset.x,
+                  this.y + this.timeSignatureOffset.y);
         break;
-      default:
-
     }
   }
 
   drawLines() {
-    for(let i = 0; i < this.n_lines; i++) {
+    for(let i = 0; i < this.nLines; i++) {
       strokeWeight(1.0);
-      line(this.x,
-           this.y + STAFF_SPACE_HEIGHT * i,
-           this.x + this.width,
-           this.y + STAFF_SPACE_HEIGHT * i);
+      line(this.x, this.y + this.spaceHeight * i,
+           this.x + this.width, this.y + this.spaceHeight * i);
     }
   }
 
@@ -89,7 +85,7 @@ class Staff {
       line(this.horDrawableStart + bar_width * (i + 1),
            this.y,
            this.horDrawableStart + bar_width * (i + 1),
-           this.y + STAFF_SPACE_HEIGHT * (STAFF_LINES - 1));
+           this.y + this.spaceHeight * (STAFF_LINES - 1));
     }
   }
 
@@ -101,22 +97,22 @@ class Staff {
     const noteChar = Note.getChar(value, isUpSideDown);
 
     // Draw note
-    textSize(NOTE_SIZE);
-    text(noteChar, x + NOTE_OFFSET_X, staffPos + NOTE_OFFSET_Y);
+    textSize(this.noteSize);
+    text(noteChar, x + this.noteOffset.x, staffPos + this.noteOffset.y);
 
     // Draw accidental
     switch (accidental) {
       case "#":
-        text('', x + NOTE_OFFSET_X - 10, staffPos + NOTE_OFFSET_Y);
+        text('', x + this.noteOffset.x - 10, staffPos + this.noteOffset.y);
         break;
       case "b":
-        text('', x + NOTE_OFFSET_X - 10, staffPos + NOTE_OFFSET_Y);
+        text('', x + this.noteOffset.x - 10, staffPos + this.noteOffset.y);
         break;
     }
 
     // draw ledger line
     if (staffIndex == 1 || staffIndex == 13) {
-      line(x - NOTE_SIZE/4, staffPos, x + NOTE_SIZE/4, staffPos);
+      line(x - this.noteSize/4, staffPos, x + this.noteSize/4, staffPos);
     }
   }
 
@@ -173,64 +169,64 @@ class Staff {
 
   canvasPos2Pitch(y) {
     let staffIndex = staff.canvasPos2StaffIndex(y);
-    return C_MAJOR[staffIndex];
+    return this.scale[staffIndex];
   }
 
   canvasPos2StaffPos(y) {
     let staffIndex = staff.canvasPos2StaffIndex(y);
-    let staffPos = this.verDrawableEnd - STAFF_SPACE_HEIGHT -
-                      (staffIndex - 1) * STAFF_SPACE_HEIGHT/2;
+    let staffPos = this.verDrawableEnd - this.spaceHeight -
+                      (staffIndex - 1) * this.spaceHeight/2;
     return staffPos;
   }
 
   canvasPos2StaffIndex(y) {
     if (this.isInVerticalBoundaries(y)) {
-      if (y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 0.75) {
+      if (y > this.verDrawableEnd - this.spaceHeight * 0.75) {
         return 0;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 1.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 1.25) {
         return 1;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 1.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 1.75) {
         return 2;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 2.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 2.25) {
         return 3;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 2.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 2.75) {
         return 4;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 3.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 3.25) {
         return 5;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 3.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 3.75) {
         return 6;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 4.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 4.25) {
         return 7;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 4.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 4.75) {
         return 8;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 5.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 5.25) {
         return 9;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 5.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 5.75) {
         return 10;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 6.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 6.25) {
         return 11;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 6.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 6.75) {
         return 12;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 7.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 7.25) {
         return 13;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 7.75) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 7.75) {
         return 14;
       }
-      else if(y > this.verDrawableEnd - STAFF_SPACE_HEIGHT * 8.25) {
+      else if(y > this.verDrawableEnd - this.spaceHeight * 8.25) {
         return 15;
       }
     }

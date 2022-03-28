@@ -1,14 +1,16 @@
-const MENU_DEFAULT_NOTE_VALUE = "4n";
 
 class Menu {
-  constructor(x, y, width, height) {
+  constructor(x, y, width, height, buttonWidth=32, buttonHeight=32, defaultNoteValue="4n") {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
 
+    this.buttonWidth = buttonWidth;
+    this.buttonHeight = buttonHeight;
+
     this.currentAccidental = null;
-    this.currentNoteValue = MENU_DEFAULT_NOTE_VALUE;
+    this.currentNoteValue = defaultNoteValue;
   }
 
   draw() {
@@ -37,8 +39,8 @@ class Menu {
   createTextButton(text, column, callback) {
     let button = createButton(text);
 
-    button.position(this.x + column * 32, this.height/2);
-    button.size(32, 32);
+    button.position(this.x + column * this.buttonWidth, this.y + this.height/2 - this.buttonHeight/2);
+    button.size(this.buttonWidth, this.buttonHeight);
     button.mousePressed(callback);
 
     button.mouseOver(() => {
@@ -55,8 +57,8 @@ class Menu {
   createImgButton(srcImage, column, callback) {
     let button = createImg(srcImage);
 
-    button.position(this.x + column * 32, this.height/2);
-    button.size(32, 32);
+    button.position(this.x + column * this.buttonWidth, this.y + this.height/2 - this.buttonHeight/2);
+    button.size(this.buttonWidth, this.buttonHeight);
     button.mousePressed(callback);
 
     button.mouseOver(() => {

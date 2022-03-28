@@ -1,5 +1,3 @@
-PIANO_DEFAULT_VELOCITY = 0.9;
-
 class Piano {
   constructor(url) {
     this.sampler = new Tone.Sampler({
@@ -37,11 +35,9 @@ class Piano {
         "release" : 1,
         "baseUrl" : url
     }).toDestination();
-
-    this.velocity = PIANO_DEFAULT_VELOCITY;
   }
 
-  play(notes) {
+  play(notes, velocity) {
     // Initialize tone.js
     Tone.start();
     Tone.Transport.bpm.value = 120;
@@ -57,7 +53,7 @@ class Piano {
       phrase.push({ time: noteStartTime,
                    pitch: pitch,
                    value: note.value,
-                velocity: this.velocity });
+                velocity: velocity });
 
       noteStartTime += Tone.Time(note.value);
     }

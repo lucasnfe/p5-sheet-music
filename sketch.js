@@ -1,15 +1,3 @@
-const MARGIN = 40;
-
-const MENU_X = MARGIN;
-const MENU_Y = 15;
-const MENU_HEIGHT = 60;
-
-const STAFF_X = MARGIN;
-const STAFF_Y = MENU_Y + MENU_HEIGHT + MARGIN;
-const STAFF_LINES = 5;
-const STAFF_BARS = 0;
-const STAFF_CLEF = "treble";
-const STAFF_TIME_SIGNATURE = "4/4";
 
 function preload(){
   fontRegular = loadFont('fonts/Bravura.otf');
@@ -20,10 +8,12 @@ function setup() {
   createCanvas(windowWidth, 400);
 
   // Compute main width from canvas width
-  const mainWidth = width - MARGIN - STAFF_X;
+  const mainWidth = width - Config.margin - Config.staff.x;
+  Config.staff.width = mainWidth;
+  Config.menu.width = mainWidth;
 
   // Create Menu
-  menu = new Menu(MENU_X, MENU_Y, mainWidth, MENU_HEIGHT);
+  menu = new Menu(Config.menu.x, Config.menu.y, mainWidth, Config.menu.height);
   menu.createImgButton('imgs/play.png', 0.75, play);
   menu.createImgButton('imgs/1n.png', 3, setCurrentNote1n);
   menu.createImgButton('imgs/2n.png', 4, setCurrentNote2n);
@@ -35,12 +25,12 @@ function setup() {
   menu.createImgButton('imgs/flat.png', 10, toggleFlat);
 
   // Create staff
-  staff = new Staff(STAFF_X, STAFF_Y, mainWidth,
-                    STAFF_LINES, STAFF_BARS, STAFF_CLEF,
-                    STAFF_TIME_SIGNATURE);
+  staff = new Staff(Config.staff, Config.note);
+
+  console.log(staff);
 
   // Create piano
-  piano = new Piano("./samples/salamander/");
+  piano = new Piano("samples/salamander/");
 }
 
 function draw() {
@@ -97,7 +87,7 @@ function mouseClicked() {
 // Callbacks
 // -----------
 function play() {
-  piano.play(staff.notes);
+  piano.play(staff.notes, Config.defaultVelocity);
 }
 
 function setCurrentNote1n() {

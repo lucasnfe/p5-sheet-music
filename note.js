@@ -1,7 +1,3 @@
-const NOTE_SIZE = 34;
-const NOTE_OFFSET_X = -6;
-const NOTE_OFFSET_Y = 0;
-const NOTE_ACCIDENTAL_OFFSET = -10;
 
 class Note {
   constructor(x, y, pitch, value, accidental = null) {
