@@ -27,8 +27,6 @@ function setup() {
   // Create staff
   staff = new Staff(Config.staff, Config.note);
 
-  console.log(staff);
-
   // Create piano
   piano = new Piano("samples/salamander/");
 }
