@@ -6,6 +6,8 @@ This minimalistic p5.js editor/player is designed for quickly skething ideas and
 with music notation exercices. This is an ongoing project. There is a lot of features to be 
 implemented to make it as ufeul as I want it to be.
 
+- [Demo](https://lucasnfe.github.io/p5-sheet-music/index.html) of the current version.
+
 ### TODO
 
 - Connect 8th, 16th, and 32nd notes with beam.
