@@ -1,4 +1,10 @@
 
+const editorModes = {
+    "editing": 0,
+    "insertingNote": 1,
+    "insertingBar": 2,
+}
+
 function preload(){
   fontRegular = loadFont('fonts/Bravura.otf');
 }
@@ -23,12 +29,15 @@ function setup() {
   menu.createImgButton('imgs/32n.png', 8, setCurrentNote32n);
   menu.createImgButton('imgs/sharp.png', 9, toggleSharp);
   menu.createImgButton('imgs/flat.png', 10, toggleFlat);
+  menu.createImgButton('imgs/bar.png', 11, setBar);
 
   // Create staff
   staff = new Staff(Config.staff, Config.note);
 
   // Create piano
   piano = new Piano("samples/salamander/");
+
+  editorMode = editorModes["insertingNote"];
 }
 
 function draw() {
@@ -37,10 +46,20 @@ function draw() {
   menu.draw();
   staff.draw();
 
-  drawNoteGuide();
+  switch (editorMode) {
+    case editorModes["editing"]:
+      break;
+    case editorModes["insertingNote"]:
+      drawNoteGuide();
+      break;
+    case editorModes["insertingBar"]:
+      drawBarGuide();
+      break;
+  }
 }
 
 function keyPressed() {
+  console.log(keyCode);
   switch (keyCode) {
     case 49: // 1
       setCurrentNote1n();
@@ -61,6 +80,9 @@ function keyPressed() {
       setCurrentNote32n();
       break;
     case 66: // b
+      setBar();
+      break;
+    case 70: // f
       toggleFlat();
       break;
     case 83: // s
@@ -75,9 +97,24 @@ function drawNoteGuide() {
   }
 }
 
+function drawBarGuide() {
+  if (staff.isInStaff(mouseX, mouseY)) {
+    staff.drawBar(mouseX, mouseY);
+  }
+}
+
 function mouseClicked() {
   if (staff.isInStaff(mouseX, mouseY)) {
-    staff.addNote(mouseX, mouseY, menu.currentNoteValue, menu.currentAccidental);
+    switch (editorMode) {
+      case editorModes["editing"]:
+        break;
+      case editorModes["insertingNote"]:
+        staff.addNote(mouseX, mouseY, menu.currentNoteValue, menu.currentAccidental);
+        break;
+      case editorModes["insertingBar"]:
+        staff.addBar(mouseX);
+        break;
+    }
   }
 }
 
@@ -89,26 +126,32 @@ function play() {
 }
 
 function setCurrentNote1n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("1n");
 }
 
 function setCurrentNote2n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("2n");
 }
 
 function setCurrentNote4n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("4n");
 }
 
 function setCurrentNote8n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("8n");
 }
 
 function setCurrentNote16n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("16n");
 }
 
 function setCurrentNote32n() {
+  editorMode = editorModes["insertingNote"];
   menu.setCurrentNoteValue("32n");
 }
 
@@ -118,4 +161,8 @@ function toggleSharp() {
 
 function toggleFlat() {
   menu.toggleCurrentAccidental("b");
+}
+
+function setBar() {
+  editorMode = editorModes["insertingBar"];
 }

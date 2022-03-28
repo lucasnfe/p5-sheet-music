@@ -29,6 +29,7 @@ class Staff {
     this.verDrawableEnd   = this.y + (this.nLines + 1) * this.spaceHeight;
 
     this.notes = [];
+    this.bars = [];
   }
 
   draw() {
@@ -41,8 +42,10 @@ class Staff {
     // Draw lines
     this.drawLines();
 
-    // Draw Bars
-    this.drawBars();
+    // Draw bars
+    for (let bar of this.bars) {
+      this.drawBar(bar);
+    }
 
     // Draw Notes
     for (let note of this.notes) {
@@ -77,16 +80,9 @@ class Staff {
     }
   }
 
-  drawBars() {
-    let bar_width = (this.horDrawableEnd - this.horDrawableStart)/this.n_bars;
-
-    for (let i = 0; i < this.n_bars; i++) {
-      strokeWeight(1.5);
-      line(this.horDrawableStart + bar_width * (i + 1),
-           this.y,
-           this.horDrawableStart + bar_width * (i + 1),
-           this.y + this.spaceHeight * (STAFF_LINES - 1));
-    }
+  drawBar(x) {
+    strokeWeight(1.5);
+    line(x, this.y, x, this.y + this.spaceHeight * (this.nLines - 1));
   }
 
   drawNote(x, y, value, accidental) {
@@ -129,6 +125,20 @@ class Staff {
 
     let note = new Note(x, y, staff.canvasPos2Pitch(y), value, accidental);
     this.notes.splice(low, 0, note);
+  }
+
+  addBar(x) {
+    // Add note sorted by x position
+    let low = 0;
+    let high = this.notes.length;
+
+    while (low < high) {
+      var mid = low + high >>> 1;
+      if (this.bars[mid] < x) low = mid + 1;
+      else high = mid;
+    }
+
+    this.bars.splice(low, 0, x);
   }
 
   isInHorizontalBoundaries(x) {
