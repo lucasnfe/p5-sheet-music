@@ -16,3 +16,5 @@ implemented to make it as ufeul as I want it to be.
 - Add/Remove staff.
 - Join two staffs to make a grand staff. 
 - Read constants from a json config file.
+- Record notes from MIDI controller.
+- Print to pdf.
