@@ -13,7 +13,7 @@ implemented to make it as ufeul as I want it to be.
 - Connect 8th, 16th, and 32nd notes with beam.
 - Create chord when a note is placed on top of another note.
 - Edit clef, time signature, and notes on the staff.
-- Display measures in custom locations.
+- ~~Display measures in custom locations~~.
 - Display measure number.
 - Display and edit tempo (bpm).
 - Highligh a note when it is played.
