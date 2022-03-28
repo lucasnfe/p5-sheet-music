@@ -11,7 +11,8 @@ class Config {
     y: Config.margin,
     width: Config.width,
     height: 60,
-    defaultNoteValue: "4n"
+    defaultNoteValue: "4n",
+    button: {width: 32, height:32 }
   };
 
   // -----------
@@ -19,7 +20,7 @@ class Config {
   // -----------
   static staff = {
     x: Config.margin,
-    y: Config.margin + Config.menu.y + Config.menu.height,
+    y: Config.menu.y + Config.menu.height + 25,
     width: Config.width,
     clef: {
       type: "treble",

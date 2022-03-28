@@ -13,7 +13,7 @@ function setup() {
   Config.menu.width = mainWidth;
 
   // Create Menu
-  menu = new Menu(Config.menu.x, Config.menu.y, mainWidth, Config.menu.height);
+  menu = new Menu(Config.menu);
   menu.createImgButton('imgs/play.png', 0.75, play);
   menu.createImgButton('imgs/1n.png', 3, setCurrentNote1n);
   menu.createImgButton('imgs/2n.png', 4, setCurrentNote2n);

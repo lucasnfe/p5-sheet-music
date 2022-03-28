@@ -1,16 +1,16 @@
 
 class Menu {
-  constructor(x, y, width, height, buttonWidth=32, buttonHeight=32, defaultNoteValue="4n") {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+  constructor(menuConfig) {
+    this.x = menuConfig.x;
+    this.y = menuConfig.y;
+    this.width = menuConfig.width;
+    this.height = menuConfig.height;
 
-    this.buttonWidth = buttonWidth;
-    this.buttonHeight = buttonHeight;
+    this.buttonWidth = menuConfig.button.width;
+    this.buttonHeight = menuConfig.button.height;
 
     this.currentAccidental = null;
-    this.currentNoteValue = defaultNoteValue;
+    this.currentNoteValue = menuConfig.defaultNoteValue;
   }
 
   draw() {
