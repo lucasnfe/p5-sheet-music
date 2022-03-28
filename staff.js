@@ -116,20 +116,6 @@ class Staff {
     }
   }
 
-  sortedIndex(array, value) {
-  	let low = 0;
-  	let high = array.length;
-
-  	while (low < high) {
-  		var mid = low + high >>> 1;
-  		if (array[mid] < value) low = mid + 1;
-  		else high = mid;
-  	}
-
-  	return low;
-  }
-
-
   addNote(x, y, value, accidental) {
     // Add note sorted by x position
     let low = 0;
