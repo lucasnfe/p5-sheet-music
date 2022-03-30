@@ -1,6 +1,6 @@
 
 class Staff {
-  constructor(staffConfig, noteConfig) {
+  constructor(staffConfig) {
     // Copy staff properties
     this.x = staffConfig.x;
     this.y = staffConfig.y;
@@ -16,12 +16,7 @@ class Staff {
     this.timeSignatureSize = staffConfig.timeSignature.size;
     this.timeSignatureOffset = staffConfig.timeSignature.offset;
 
-    // Copy note properties
-    this.noteSize = noteConfig.size;
-    this.noteOffset = noteConfig.offset;
-    this.accidentalOffsetX = noteConfig.accidentalOffsetX;
-
-    // Compute staff boundaries
+    // Staff boundaries
     this.spaceHeight = staffConfig.spaceHeight;
     this.horDrawableStart = this.x + this.clefOffset.x + this.clefSize + this.timeSignatureOffset.x + this.timeSignatureSize;
     this.horDrawableEnd   = this.x + this.width;
@@ -54,6 +49,7 @@ class Staff {
   }
 
   drawClef() {
+    textAlign(LEFT);
     textSize(this.clefSize);
     switch (this.clef) {
       case "treble":
@@ -63,6 +59,7 @@ class Staff {
   }
 
   drawTimeSignature() {
+    textAlign(LEFT);
     textSize(this.timeSignatureSize);
     switch (this.timeSignature) {
       case "4/4":
@@ -86,29 +83,28 @@ class Staff {
   }
 
   drawNote(x, y, value, accidental) {
-    const staffIndex = this.canvasPos2StaffIndex(y);
-    const staffPos = this.canvasPos2StaffPos(y);
+    const staffPos = this.quantizeY(y);
+    const isUp = this.getStaffIndexFromY(y) < 7;
 
-    let isUpSideDown = staffIndex >= 7;
-    const noteChar = Note.getChar(value, isUpSideDown);
-
-    // Draw note
-    textSize(this.noteSize);
-    text(noteChar, x + this.noteOffset.x, staffPos + this.noteOffset.y);
-
-    // Draw accidental
-    switch (accidental) {
-      case "#":
-        text('', x + this.noteOffset.x - 10, staffPos + this.noteOffset.y);
+    switch (value) {
+      case "1n":
+        WholeNote.draw(x, staffPos, accidental);
         break;
-      case "b":
-        text('', x + this.noteOffset.x - 10, staffPos + this.noteOffset.y);
+      case "2n":
+        HalfNote.draw(x, staffPos, isUp, accidental);
         break;
-    }
-
-    // draw ledger line
-    if (staffIndex == 1 || staffIndex == 13) {
-      line(x - this.noteSize/4, staffPos, x + this.noteSize/4, staffPos);
+      case "4n":
+        QuarterNote.draw(x, staffPos, isUp, accidental);
+        break;
+      case "8n":
+        EighthNote.draw(x, staffPos, isUp, accidental);
+        break;
+      case "16n":
+        SixteenthNote.draw(x, staffPos, isUp, accidental);
+        break;
+      case "32n":
+        ThirtySecondNote.draw(x, staffPos, isUp, accidental);
+        break;
     }
   }
 
@@ -123,7 +119,7 @@ class Staff {
       else high = mid;
     }
 
-    let note = new Note(x, y, staff.canvasPos2Pitch(y), value, accidental);
+    let note = new Note(x, y, staff.getPitchFromY(y), value, accidental);
     this.notes.splice(low, 0, note);
   }
 
@@ -143,7 +139,7 @@ class Staff {
 
   isInHorizontalBoundaries(x) {
     if (x >= this.horDrawableStart && x <= this.horDrawableEnd) {
-          return true;
+      return true;
     }
     return false;
   }
@@ -159,23 +155,23 @@ class Staff {
     if (this.isInHorizontalBoundaries(x) && this.isInVerticalBoundaries(y)) {
       return true;
     }
-
     return false;
   }
 
-  canvasPos2Pitch(y) {
-    let staffIndex = staff.canvasPos2StaffIndex(y);
-    return this.scale[staffIndex];
-  }
-
-  canvasPos2StaffPos(y) {
-    let staffIndex = staff.canvasPos2StaffIndex(y);
-    let staffPos = this.verDrawableEnd - this.spaceHeight -
+  quantizeY(y) {
+    let staffIndex = staff.getStaffIndexFromY(y);
+    let quantizedY = this.verDrawableEnd - this.spaceHeight -
                       (staffIndex - 1) * this.spaceHeight/2;
-    return staffPos;
+    return quantizedY;
   }
 
-  canvasPos2StaffIndex(y) {
+  getPitchFromY(y) {
+    let staffIndex = staff.getStaffIndexFromY(y);
+    let pitch = this.scale[staffIndex]
+    return pitch;
+  }
+
+  getStaffIndexFromY(y) {
     if (this.isInVerticalBoundaries(y)) {
       if (y > this.verDrawableEnd - this.spaceHeight * 0.75) {
         return 0;

@@ -38,15 +38,6 @@ class Config {
   };
 
   // -----------
-  // Note
-  // -----------
-  static note = {
-    size: 34,
-    offset: {x: -6, y: 0},
-    accidentalOffsetX: -10
-  };
-
-  // -----------
   // Piano
   // -----------
   static defaultVelocity = 0.9;

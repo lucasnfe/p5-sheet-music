@@ -13,6 +13,8 @@ function setup() {
   textFont(fontRegular);
   createCanvas(windowWidth, 400);
 
+  angleMode(DEGREES);
+
   // Compute main width from canvas width
   const mainWidth = width - Config.margin - Config.staff.x;
   Config.staff.width = mainWidth;
@@ -32,7 +34,7 @@ function setup() {
   menu.createImgButton('imgs/bar.png', 11, setBar);
 
   // Create staff
-  staff = new Staff(Config.staff, Config.note);
+  staff = new Staff(Config.staff);
 
   // Create piano
   piano = new Piano("samples/salamander/");
