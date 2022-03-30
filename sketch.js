@@ -1,16 +1,10 @@
 
-const editorModes = {
-    "editing": 0,
-    "insertingNote": 1,
-    "insertingBar": 2,
-}
-
 function preload(){
-  fontRegular = loadFont('fonts/Bravura.otf');
+  bravuraFont = loadFont('fonts/Bravura.otf');
 }
 
 function setup() {
-  textFont(fontRegular);
+  textFont(bravuraFont);
   createCanvas(windowWidth, 400);
 
   angleMode(DEGREES);
@@ -36,10 +30,11 @@ function setup() {
   // Create staff
   staff = new Staff(Config.staff);
 
+  // Create editor
+  editor = new Editor();
+
   // Create piano
   piano = new Piano("samples/salamander/");
-
-  editorMode = editorModes["insertingNote"];
 }
 
 function draw() {
@@ -47,15 +42,43 @@ function draw() {
 
   menu.draw();
   staff.draw();
+  editor.draw(staff, menu.currentNoteValue, menu.currentAccidental);
+}
 
-  switch (editorMode) {
-    case editorModes["editing"]:
+function mousePressed() {
+  switch (editor.mode) {
+    case "editing":
+      editor.clicked(mouseX, mouseY, staff, bravuraFont);
       break;
-    case editorModes["insertingNote"]:
-      drawNoteGuide();
+    case "insertingNote":
+      staff.addNote(mouseX, mouseY, menu.currentNoteValue, menu.currentAccidental);
       break;
-    case editorModes["insertingBar"]:
-      drawBarGuide();
+    case "insertingBar":
+      staff.addBar(mouseX, mouseY);
+      break;
+  }
+}
+
+function mouseDragged() {
+  switch (editor.mode) {
+    case "editing":
+      editor.updateSelectedNotesPosition(mouseX, mouseY, staff);
+      break;
+    case "insertingNote":
+      break;
+    case "insertingBar":
+      break;
+  }
+}
+
+function mouseReleased() {
+  switch (editor.mode) {
+    case "editing":
+      staff.sortNotes();
+      break;
+    case "insertingNote":
+      break;
+    case "insertingBar":
       break;
   }
 }
@@ -63,6 +86,12 @@ function draw() {
 function keyPressed() {
   console.log(keyCode);
   switch (keyCode) {
+    case 8: // delete
+      editor.deleteSelectedNotes(staff);
+      break;
+    case 27: // esc
+      editor.setMode("editing");
+      break;
     case 49: // 1
       setCurrentNote1n();
       break;
@@ -93,78 +122,58 @@ function keyPressed() {
   }
 }
 
-function drawNoteGuide() {
-  if (staff.isInStaff(mouseX, mouseY)) {
-    staff.drawNote(mouseX, mouseY, menu.currentNoteValue, menu.currentAccidental);
-  }
-}
-
-function drawBarGuide() {
-  if (staff.isInStaff(mouseX, mouseY)) {
-    staff.drawBar(mouseX, mouseY);
-  }
-}
-
-function mouseClicked() {
-  if (staff.isInStaff(mouseX, mouseY)) {
-    switch (editorMode) {
-      case editorModes["editing"]:
-        break;
-      case editorModes["insertingNote"]:
-        staff.addNote(mouseX, mouseY, menu.currentNoteValue, menu.currentAccidental);
-        break;
-      case editorModes["insertingBar"]:
-        staff.addBar(mouseX);
-        break;
-    }
-  }
-}
-
 // -----------
 // Callbacks
 // -----------
+function stop() {
+  editor.setMode("editing");
+}
+
 function play() {
-  piano.play(staff.notes, Config.defaultVelocity);
+  editor.setMode("playing");
+  piano.play(staff.notes, Config.defaultVelocity, stop);
 }
 
 function setCurrentNote1n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("1n");
 }
 
 function setCurrentNote2n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("2n");
 }
 
 function setCurrentNote4n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("4n");
 }
 
 function setCurrentNote8n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("8n");
 }
 
 function setCurrentNote16n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("16n");
 }
 
 function setCurrentNote32n() {
-  editorMode = editorModes["insertingNote"];
+  editor.setMode("insertingNote");
   menu.setCurrentNoteValue("32n");
 }
 
 function toggleSharp() {
   menu.toggleCurrentAccidental("#");
+  editor.updateSelectedNotesAccidental(menu.currentAccidental, staff);
 }
 
 function toggleFlat() {
   menu.toggleCurrentAccidental("b");
+  editor.updateSelectedNotesAccidental(menu.currentAccidental, staff);
 }
 
 function setBar() {
-  editorMode = editorModes["insertingBar"];
+  editor.setMode("insertingBar");
 }

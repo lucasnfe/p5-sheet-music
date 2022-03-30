@@ -44,13 +44,16 @@ class Staff {
 
     // Draw Notes
     for (let note of this.notes) {
-      this.drawNote(note.x, note.y, note.value, note.accidental);
+      this.drawNote(note.x, note.y, note.value, note.accidental, note.isSelected);
     }
   }
 
   drawClef() {
+    fill("black");
+    noStroke();
     textAlign(LEFT);
     textSize(this.clefSize);
+
     switch (this.clef) {
       case "treble":
         text('', this.x + this.clefOffset.x, this.y + this.clefOffset.y);
@@ -59,6 +62,9 @@ class Staff {
   }
 
   drawTimeSignature() {
+    fill("black");
+    noStroke();
+
     textAlign(LEFT);
     textSize(this.timeSignatureSize);
     switch (this.timeSignature) {
@@ -70,45 +76,56 @@ class Staff {
   }
 
   drawLines() {
+    stroke("black");
+    strokeWeight(1.0);
+
     for(let i = 0; i < this.nLines; i++) {
-      strokeWeight(1.0);
       line(this.x, this.y + this.spaceHeight * i,
            this.x + this.width, this.y + this.spaceHeight * i);
     }
   }
 
   drawBar(x) {
+    stroke("black");
     strokeWeight(1.5);
     line(x, this.y, x, this.y + this.spaceHeight * (this.nLines - 1));
   }
 
-  drawNote(x, y, value, accidental) {
+  drawNote(x, y, value, accidental, selected) {
+    // Make sure position is in staff
+    if (!this.isInStaff(x, y))
+      return;
+
     const staffPos = this.quantizeY(y);
     const isUp = this.getStaffIndexFromY(y) < 7;
 
     switch (value) {
       case "1n":
-        WholeNote.draw(x, staffPos, accidental);
+        WholeNote.draw(x, staffPos, accidental, selected);
         break;
       case "2n":
-        HalfNote.draw(x, staffPos, isUp, accidental);
+        HalfNote.draw(x, staffPos, isUp, accidental, selected);
         break;
       case "4n":
-        QuarterNote.draw(x, staffPos, isUp, accidental);
+        QuarterNote.draw(x, staffPos, isUp, accidental, selected);
         break;
       case "8n":
-        EighthNote.draw(x, staffPos, isUp, accidental);
+        EighthNote.draw(x, staffPos, isUp, accidental, selected);
         break;
       case "16n":
-        SixteenthNote.draw(x, staffPos, isUp, accidental);
+        SixteenthNote.draw(x, staffPos, isUp, accidental, selected);
         break;
       case "32n":
-        ThirtySecondNote.draw(x, staffPos, isUp, accidental);
+        ThirtySecondNote.draw(x, staffPos, isUp, accidental, selected);
         break;
     }
   }
 
   addNote(x, y, value, accidental) {
+    // Make sure position is in staff
+    if (!this.isInStaff(x, y))
+      return;
+
     // Add note sorted by x position
     let low = 0;
     let high = this.notes.length;
@@ -119,11 +136,31 @@ class Staff {
       else high = mid;
     }
 
-    let note = new Note(x, y, staff.getPitchFromY(y), value, accidental);
+    let pitch = staff.getPitchFromY(y);
+    let note = new Note(x, y, pitch, value, accidental);
     this.notes.splice(low, 0, note);
   }
 
-  addBar(x) {
+  removeNote(note) {
+    const noteIndex = this.notes.indexOf(note);
+    let removedNote = this.notes.splice(noteIndex, 1);
+    return removedNote;
+  }
+
+  updateNotePosition(note, x, y) {
+    // Make sure position is in staff
+    if (!this.isInStaff(x, y))
+      return;
+
+    let pitch = this.getPitchFromY(y);
+    note.updatePosition(x, y, pitch);
+  }
+
+  addBar(x, y) {
+    // Make sure position is in staff
+    if (!this.isInStaff(x, y))
+      return;
+
     // Add note sorted by x position
     let low = 0;
     let high = this.notes.length;
@@ -135,6 +172,10 @@ class Staff {
     }
 
     this.bars.splice(low, 0, x);
+  }
+
+  sortNotes() {
+    this.notes.sort((a,b) => { return a.x - b.x });
   }
 
   isInHorizontalBoundaries(x) {
@@ -220,6 +261,33 @@ class Staff {
       }
       else if(y > this.verDrawableEnd - this.spaceHeight * 8.25) {
         return 15;
+      }
+    }
+
+    return null;
+  }
+
+  getNoteFromPos(x, y, font) {
+    for(let note of this.notes) {
+      const isUp = this.getStaffIndexFromY(note.y) < 7;
+
+      // Get note axis aligned bounding box (aabb)
+      let bbox = null;
+      switch (note.value) {
+        case "1n":
+          bbox = WholeNote.aabb(note.x, note.y, font);
+          break;
+        default:
+          bbox = StemedNote.aabb(note.x, note.y, isUp, font);
+          break;
+      }
+
+      // Check if point x,y in inside the note aabb
+      if (bbox) {
+        if (x >= bbox.x && x <= bbox.x + bbox.w &&
+            y >= bbox.y && y <= bbox.y + bbox.h) {
+            return note;
+         }
       }
     }
 

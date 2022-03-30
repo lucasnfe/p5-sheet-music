@@ -37,7 +37,7 @@ class Piano {
     }).toDestination();
   }
 
-  play(notes, velocity) {
+  play(notes, velocity, callback) {
     // Initialize tone.js
     Tone.start();
     Tone.Transport.bpm.value = 120;
@@ -64,6 +64,12 @@ class Piano {
     // Play part
     const part = new Tone.Part(((time, note) => {
   	   sampler.triggerAttackRelease(note.pitch, note.value, time, note.velocity);
+
+       // Call event at the end of the sequence
+       if (phrase.indexOf(note) == phrase.length - 1) {
+         if (callback) callback();
+       }
+
     }), phrase).start(Tone.now());
   }
 }

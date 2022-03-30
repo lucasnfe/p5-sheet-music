@@ -1,5 +1,6 @@
 
 class Note {
+  static selectedColor = {r: 232, g: 110, b: 88}
   static accidentalSize = 34;
   static accidentalOffset = {x: -15, y: 2};
 
@@ -9,9 +10,30 @@ class Note {
     this.pitch = pitch;
     this.value = value;
     this.accidental = accidental;
+    this.isSelected = false;
   }
 
-  static drawAccidental(x, y, accidental) {
+  select() {
+    this.isSelected = true;
+  }
+
+  deselect() {
+    this.isSelected = false;
+  }
+
+  updatePosition(x, y, pitch) {
+    this.x = x;
+    this.y = y;
+    this.pitch = pitch;
+  }
+
+  static drawAccidental(x, y, accidental, isSelected = false) {
+    if (isSelected)
+      fill(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      fill("black");
+
+    noStroke();
     textAlign(CENTER);
     textSize(Note.accidentalSize);
 
@@ -48,8 +70,12 @@ class StemedNote extends Note {
     super(x, y, pitch, value, accidental);
   }
 
-  static drawStem(x, y, isUp = true) {
+  static drawStem(x, y, isUp = true, isSelected = false) {
     strokeCap(SQUARE);
+    if (isSelected)
+      stroke(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      stroke("black");
 
     let orientation = isUp ? 1 : -1;
     line(x + StemedNote.stemOffset.x * orientation,
@@ -59,10 +85,26 @@ class StemedNote extends Note {
   }
 
   // Assume filled head
-  static drawHead(x, y) {
+  static drawHead(x, y, isSelected = false) {
+    if (isSelected)
+      fill(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      fill("black");
+
+    noStroke();
     textAlign(CENTER);
     textSize(StemedNote.headSize);
     text('', x, y);
+  }
+
+  static aabb(x, y, isUp, font) {
+    let bbox = font.textBounds('', x, y, StemedNote.headSize);
+
+    if (isUp)
+      bbox.y = y + (StemedNote.stemOffset.y - StemedNote.stemHeight);
+    bbox.h = bbox.h/2 + StemedNote.stemHeight;
+
+    return bbox;
   }
 }
 
@@ -74,12 +116,18 @@ class StemedFlaggedNote extends StemedNote {
     super(x, y, pitch, value, accidental);
   }
 
-  static drawFlag(x, y, upSymbol, downSymbol, isUp = true) {
+  static drawFlag(x, y, upSymbol, downSymbol, isUp = true, isSelected = false) {
     let symbol = isUp ? upSymbol : downSymbol;
     let orientation = isUp ? 1 : -1;
     x = x + StemedNote.stemOffset.x * orientation - StemedFlaggedNote.flagOffset.x;
     y = y + (StemedNote.stemOffset.y - StemedNote.stemHeight + StemedFlaggedNote.flagOffset.y) * orientation;
 
+    if (isSelected)
+      fill(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      fill("black");
+
+    noStroke();
     textAlign(LEFT);
     textSize(StemedFlaggedNote.flagSize);
     text(symbol, x, y);
@@ -91,15 +139,26 @@ class WholeNote extends Note {
     super(x, y, pitch, "1n", accidental);
   }
 
-  static drawHead(x, y) {
+  static drawHead(x, y, isSelected = false) {
+    if (isSelected)
+      fill(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      fill("black");
+
+    noStroke();
     textAlign(CENTER);
     textSize(40);
     text('', x, y);
   }
 
-  static draw(x, y, accidental = null) {
-    WholeNote.drawHead(x, y);
-    Note.drawAccidental(x, y, accidental);
+  static aabb(x, y, font) {
+    let bbox = font.textBounds('', x, y, 40);
+    return bbox;
+  }
+
+  static draw(x, y, accidental = null, isSelected = false) {
+    WholeNote.drawHead(x, y, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
 
@@ -108,16 +167,22 @@ class HalfNote extends StemedNote {
     super(x, y, pitch, "2n", accidental);
   }
 
-  static drawHead(x, y) {
+  static drawHead(x, y, isSelected) {
+    if (isSelected)
+      fill(Note.selectedColor.r, Note.selectedColor.g, Note.selectedColor.b);
+    else
+      fill("black");
+
+    noStroke();
     textAlign(CENTER);
     textSize(40);
     text('', x, y);
   }
 
-  static draw(x, y, isUp = true, accidental = null) {
-    StemedNote.drawStem(x, y, isUp);
-    HalfNote.drawHead(x, y);
-    Note.drawAccidental(x, y, accidental);
+  static draw(x, y, isUp = true, accidental = null, isSelected = false) {
+    StemedNote.drawStem(x, y, isUp, isSelected);
+    HalfNote.drawHead(x, y, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
 
@@ -126,10 +191,10 @@ class QuarterNote extends StemedNote {
     super(x, y, pitch, "4n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null) {
-    StemedNote.drawStem(x, y, isUp);
-    StemedNote.drawHead(x, y);
-    Note.drawAccidental(x, y, accidental);
+  static draw(x, y, isUp = true, accidental = null, isSelected = false) {
+    StemedNote.drawStem(x, y, isUp, isSelected);
+    StemedNote.drawHead(x, y, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
 
@@ -138,11 +203,11 @@ class EighthNote extends StemedFlaggedNote {
     super(x, y, pitch, "8n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null) {
-    StemedNote.drawStem(x, y, isUp);
-    StemedNote.drawHead(x, y);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp);
-    Note.drawAccidental(x, y, accidental);
+  static draw(x, y, isUp = true, accidental = null, isSelected = false) {
+    StemedNote.drawStem(x, y, isUp, isSelected);
+    StemedNote.drawHead(x, y, isSelected);
+    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
 
@@ -151,11 +216,11 @@ class SixteenthNote extends StemedFlaggedNote {
     super(x, y, pitch, "16n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null) {
-    StemedNote.drawStem(x, y, isUp);
-    StemedNote.drawHead(x, y);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp);
-    Note.drawAccidental(x, y, accidental);
+  static draw(x, y, isUp = true, accidental = null, isSelected = false) {
+    StemedNote.drawStem(x, y, isUp, isSelected);
+    StemedNote.drawHead(x, y, isSelected);
+    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
 
@@ -164,10 +229,10 @@ class ThirtySecondNote extends StemedFlaggedNote {
     super(x, y, pitch, "32n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null) {
-    StemedNote.drawStem(x, y, isUp);
-    StemedNote.drawHead(x, y);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp);
-    Note.drawAccidental(x, y, accidental);
+  static draw(x, y, isUp = true, accidental = null, isSelected = false) {
+    StemedNote.drawStem(x, y, isUp, isSelected);
+    StemedNote.drawHead(x, y, isSelected);
+    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, isSelected);
+    Note.drawAccidental(x, y, accidental, isSelected);
   }
 }
