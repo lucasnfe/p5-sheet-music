@@ -97,7 +97,22 @@ class Staff {
       return;
 
     const staffPos = this.quantizeY(y);
-    const isUp = this.getStaffIndexFromY(y) < 7;
+    const staffIndex = this.getStaffIndexFromY(y);
+    const isUp = staffIndex < 7;
+
+    // Draw ledger lines
+    if (staffIndex <= 1) {
+      stroke(1);
+      stroke("black");
+      line(x - 10, this.y + this.spaceHeight * this.nLines,
+           x + 10, this.y + this.spaceHeight * this.nLines);
+    }
+    else if (staffIndex >= 13) {
+      stroke(1);
+      stroke("black");
+      line(x - 10, this.y - this.spaceHeight,
+           x + 10, this.y - this.spaceHeight);
+    }
 
     switch (value) {
       case "1n":
