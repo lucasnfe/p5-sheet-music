@@ -1,10 +1,7 @@
 # p5-sheet-music
 ![](docs/p5-sheet-music.gif)
 
-Most sheet music editors are fairly complicated and targeted to experienced music composers.
-This minimalistic p5.js editor/player is designed for quickly skething ideas and/or practicing
-with music notation exercices. This is an ongoing project. There is a lot of features to be 
-implemented to make it as ufeul as I want it to be.
+Most sheet music editors are fairly complicated and targeted at experienced music composers. This minimalistic p5.js editor/player is designed to quickly sketch ideas and/or practice with music notation exercises. This is an ongoing project. There are a lot of features to be implemented to make it as useful as I want it to be.
 
 - [Demo](https://lucasnfe.github.io/p5-sheet-music/index.html) of the current version.
 
