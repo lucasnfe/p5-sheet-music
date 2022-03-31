@@ -7,9 +7,10 @@ Most sheet music editors are fairly complicated and targeted at experienced musi
 
 ### TODO
 
-- Connect 8th, 16th, and 32nd notes with beam.
-- Create chord when a note is placed on top of another note.
-- Edit clef, time signature, and notes on the staff.
+- Beam 8th, 16th, and 32nd notes.
+- Include rests.
+- Create a chord when a note is placed on top of another note.
+- Edit clef, time signature, and ~~notes on the staff~~.
 - ~~Display measures in custom locations~~.
 - Display measure number.
 - Display and edit tempo (bpm).
