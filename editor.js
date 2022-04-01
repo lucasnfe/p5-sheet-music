@@ -8,6 +8,7 @@ const editorStates = {
 class Editor {
   constructor() {
     this.lastClick = createVector();
+    this.deltaClick = createVector();
 
     // Set default mode to editing
     this.setState("editing");
@@ -31,7 +32,7 @@ class Editor {
   updateSelectedNotesPosition(x, y, staff) {
     for (let note of staff.notes) {
       if (note.isSelected()) {
-        staff.updateNotePosition(note, x, y);
+        staff.updateNotePosition(note, x + this.deltaClick.x, y + this.deltaClick.y);
       }
     }
   }
@@ -64,6 +65,8 @@ class Editor {
     let note = staff.getNoteFromPos(x, y, font);
     if (note) {
         note.select();
+        this.deltaClick.x = note.x - this.lastClick.x;
+        this.deltaClick.y = note.y - this.lastClick.y;
     }
   }
 
