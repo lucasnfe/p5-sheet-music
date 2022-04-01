@@ -44,17 +44,11 @@ class Piano {
     Tone.Transport.start();
 
     // Create phrase with timed notes
-    let phrase = [];
+    let events = [];
     let noteStartTime = 0.0;
 
     for(let note of notes) {
-      let pitch = Tone.Frequency(note.getPitch(), "midi").toNote();
-
-      phrase.push({ time: noteStartTime,
-                   pitch: pitch,
-                   value: note.value,
-                velocity: velocity });
-
+      events.push({ note: note, time: noteStartTime, velocity: velocity });
       noteStartTime += Tone.Time(note.value);
     }
 
@@ -62,14 +56,19 @@ class Piano {
     let sampler = this.sampler;
 
     // Play part
-    const part = new Tone.Part(((time, note) => {
-  	   sampler.triggerAttackRelease(note.pitch, note.value, time, note.velocity);
+    const part = new Tone.Part(((time, ev) => {
+       // Play note event
+       let pitch = Tone.Frequency(ev.note.getPitch(), "midi").toNote();
+  	   sampler.triggerAttackRelease(pitch, ev.note.value, time, ev.velocity);
+
+       // Highlight note
+       ev.note.setState("playing");
+       Tone.Transport.scheduleOnce(() => ev.note.setState("idle"), time + Tone.Time(ev.note.value));
 
        // Call event at the end of the sequence
-       if (phrase.indexOf(note) == phrase.length - 1) {
-         if (callback) callback();
-       }
+       if (events.indexOf(ev) == events.length - 1 && callback)
+           Tone.Transport.scheduleOnce(callback, time + Tone.Time(ev.note.value));
 
-    }), phrase).start(Tone.now());
+    }), events).start(Tone.now());
   }
 }

@@ -14,9 +14,9 @@ Most sheet music editors are fairly complicated and targeted at experienced musi
 - ~~Display measures in custom locations~~.
 - Display measure number.
 - Display and edit tempo (bpm).
-- Highligh a note when it is played.
+- ~~Highlight a note when it is played~~.
 - Add/Remove staff.
-- Join two staffs to make a grand staff. 
+- Join two staffs to make a grand staff.
 - Read constants from a json config file.
 - Record notes from MIDI controller.
 - Print to pdf.

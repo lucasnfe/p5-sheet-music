@@ -1,4 +1,4 @@
-const editorModes = {
+const editorStates = {
     "editing": 0,
     "insertingNote": 1,
     "insertingBar": 2,
@@ -10,7 +10,7 @@ class Editor {
     this.lastClick = createVector();
 
     // Set default mode to editing
-    this.setMode("editing");
+    this.setState("editing");
   }
 
   draw(staff, currentNoteValue, currentAccidental) {
@@ -30,7 +30,7 @@ class Editor {
 
   updateSelectedNotesPosition(x, y, staff) {
     for (let note of staff.notes) {
-      if (note.isSelected) {
+      if (note.isSelected()) {
         staff.updateNotePosition(note, x, y);
       }
     }
@@ -38,7 +38,7 @@ class Editor {
 
   updateSelectedNotesAccidental(currentAccidental, staff) {
     for (let note of staff.notes) {
-      if (note.isSelected) {
+      if (note.isSelected()) {
         note.accidental = currentAccidental;
       }
     }
@@ -46,7 +46,7 @@ class Editor {
 
   deleteSelectedNotes(staff) {
     for (let note of staff.notes) {
-      if (note.isSelected) {
+      if (note.isSelected()) {
         staff.removeNote(note);
       }
     }
@@ -67,8 +67,8 @@ class Editor {
     }
   }
 
-  setMode(mode) {
-    if (mode in editorModes) {
+  setState(mode) {
+    if (mode in editorStates) {
       // deselect all notes
       for (let note of staff.notes) {
         note.deselect();

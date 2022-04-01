@@ -44,7 +44,7 @@ class Staff {
 
     // Draw Notes
     for (let note of this.notes) {
-      this.drawNote(note.x, note.y, note.value, note.accidental, note.isSelected);
+      this.drawNote(note.x, note.y, note.value, note.accidental, note.state);
     }
   }
 
@@ -91,7 +91,7 @@ class Staff {
     line(x, this.y, x, this.y + this.spaceHeight * (this.nLines - 1));
   }
 
-  drawNote(x, y, value, accidental, selected) {
+  drawNote(x, y, value, accidental, state) {
     // Make sure position is in staff
     if (!this.isInStaff(x, y))
       return;
@@ -102,13 +102,13 @@ class Staff {
 
     // Draw ledger lines
     if (staffIndex <= 1) {
-      stroke(1);
+      strokeWeight(1);
       stroke("black");
       line(x - 10, this.y + this.spaceHeight * this.nLines,
            x + 10, this.y + this.spaceHeight * this.nLines);
     }
     else if (staffIndex >= 13) {
-      stroke(1);
+      strokeWeight(1);
       stroke("black");
       line(x - 10, this.y - this.spaceHeight,
            x + 10, this.y - this.spaceHeight);
@@ -116,22 +116,22 @@ class Staff {
 
     switch (value) {
       case "1n":
-        WholeNote.draw(x, staffPos, accidental, selected);
+        WholeNote.draw(x, staffPos, accidental, state);
         break;
       case "2n":
-        HalfNote.draw(x, staffPos, isUp, accidental, selected);
+        HalfNote.draw(x, staffPos, isUp, accidental, state);
         break;
       case "4n":
-        QuarterNote.draw(x, staffPos, isUp, accidental, selected);
+        QuarterNote.draw(x, staffPos, isUp, accidental, state);
         break;
       case "8n":
-        EighthNote.draw(x, staffPos, isUp, accidental, selected);
+        EighthNote.draw(x, staffPos, isUp, accidental, state);
         break;
       case "16n":
-        SixteenthNote.draw(x, staffPos, isUp, accidental, selected);
+        SixteenthNote.draw(x, staffPos, isUp, accidental, state);
         break;
       case "32n":
-        ThirtySecondNote.draw(x, staffPos, isUp, accidental, selected);
+        ThirtySecondNote.draw(x, staffPos, isUp, accidental, state);
         break;
     }
   }

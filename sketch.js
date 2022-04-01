@@ -90,7 +90,7 @@ function keyPressed() {
       editor.deleteSelectedNotes(staff);
       break;
     case 27: // esc
-      editor.setMode("editing");
+      editor.setState("editing");
       break;
     case 49: // 1
       setCurrentNote1n();
@@ -126,41 +126,41 @@ function keyPressed() {
 // Callbacks
 // -----------
 function stop() {
-  editor.setMode("editing");
+  editor.setState("editing");
 }
 
 function play() {
-  editor.setMode("playing");
+  editor.setState("playing");
   piano.play(staff.notes, Config.defaultVelocity, stop);
 }
 
 function setCurrentNote1n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("1n");
 }
 
 function setCurrentNote2n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("2n");
 }
 
 function setCurrentNote4n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("4n");
 }
 
 function setCurrentNote8n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("8n");
 }
 
 function setCurrentNote16n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("16n");
 }
 
 function setCurrentNote32n() {
-  editor.setMode("insertingNote");
+  editor.setState("insertingNote");
   menu.setCurrentNoteValue("32n");
 }
 
@@ -175,5 +175,5 @@ function toggleFlat() {
 }
 
 function setBar() {
-  editor.setMode("insertingBar");
+  editor.setState("insertingBar");
 }
