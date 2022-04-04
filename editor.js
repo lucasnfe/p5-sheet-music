@@ -6,7 +6,9 @@ const editorStates = {
 }
 
 class Editor {
-  constructor() {
+  constructor(staff) {
+    this.staff = staff;
+
     this.lastClick = createVector();
     this.deltaClick = createVector();
 
@@ -14,55 +16,57 @@ class Editor {
     this.setState("editing");
   }
 
-  draw(staff, currentNoteValue, currentAccidental) {
-    switch (this.mode) {
+  draw(value, accidental, font, size) {
+    switch (this.state) {
       case "editing":
         break;
       case "insertingNote":
-        staff.drawNote(mouseX, mouseY, currentNoteValue, currentAccidental);
+        if (value) {
+          this.staff.drawNote(mouseX, mouseY, font, size, value, accidental);
+        }
         break;
       case "insertingBar":
-        if (staff.isInStaff(mouseX, mouseY)) {
-            staff.drawBar(mouseX);
+        if (this.staff.isInStaff(mouseX, mouseY)) {
+          this.staff.drawBar(mouseX);
         }
         break;
     }
   }
 
-  updateSelectedNotesPosition(x, y, staff) {
-    for (let note of staff.notes) {
+  updateSelectedNotesPosition(x, y) {
+    for (let note of this.staff.notes) {
       if (note.isSelected()) {
-        staff.updateNotePosition(note, x + this.deltaClick.x, y + this.deltaClick.y);
+        this.staff.updateNotePosition(note, x + this.deltaClick.x, y + this.deltaClick.y);
       }
     }
   }
 
-  updateSelectedNotesAccidental(currentAccidental, staff) {
-    for (let note of staff.notes) {
+  updateSelectedNotesAccidental(currentAccidental) {
+    for (let note of this.staff.notes) {
       if (note.isSelected()) {
         note.accidental = currentAccidental;
       }
     }
   }
 
-  deleteSelectedNotes(staff) {
-    for (let note of staff.notes) {
+  deleteSelectedNotes() {
+    for (let note of this.staff.notes) {
       if (note.isSelected()) {
-        staff.removeNote(note);
+        this.staff.removeNote(note);
       }
     }
   }
 
-  clicked(x, y, staff, font) {
+  clicked(x, y, font) {
     this.lastClick.x = x;
     this.lastClick.y = y;
 
     // deselect all notes
-    for (let note of staff.notes) {
+    for (let note of this.staff.notes) {
       note.deselect();
     }
 
-    let note = staff.getNoteFromPos(x, y, font);
+    let note = this.staff.getNoteFromPos(x, y, font);
     if (note) {
         note.select();
         this.deltaClick.x = note.x - this.lastClick.x;
@@ -70,14 +74,14 @@ class Editor {
     }
   }
 
-  setState(mode) {
-    if (mode in editorStates) {
+  setState(state) {
+    if (state in editorStates) {
       // deselect all notes
-      for (let note of staff.notes) {
+      for (let note of this.staff.notes) {
         note.deselect();
       }
 
-      this.mode = mode;
+      this.state = state;
     }
   }
 }

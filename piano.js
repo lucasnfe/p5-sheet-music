@@ -37,6 +37,27 @@ class Piano {
     }).toDestination();
   }
 
+  stop(notes) {
+    Tone.Transport.cancel();
+    Tone.Draw.cancel();
+
+    for (let note of notes) {
+      this.releaseNote(note);
+    }
+  }
+
+  attackNote(note, time, velocity) {
+    let pitch = Tone.Frequency(note.getPitch(), "midi").toNote();
+    this.sampler.triggerAttack(pitch, time, velocity);
+    note.setState("playing");
+  }
+
+  releaseNote(note) {
+    let pitch = Tone.Frequency(note.getPitch(), "midi").toNote();
+    this.sampler.triggerRelease(pitch);
+    note.setState("idle");
+  }
+
   play(notes, velocity, callback) {
     // Initialize tone.js
     Tone.start();
@@ -45,30 +66,29 @@ class Piano {
 
     // Create phrase with timed notes
     let events = [];
-    let noteStartTime = 0.0;
 
+    let noteStartTime = 0;
     for(let note of notes) {
       events.push({ note: note, time: noteStartTime, velocity: velocity });
       noteStartTime += Tone.Time(note.value);
     }
 
-    // Get pointer to object sampler to use in the callback below.
-    let sampler = this.sampler;
-
     // Play part
-    const part = new Tone.Part(((time, ev) => {
-       // Play note event
-       let pitch = Tone.Frequency(ev.note.getPitch(), "midi").toNote();
-  	   sampler.triggerAttackRelease(pitch, ev.note.value, time, ev.velocity);
+    const part = new Tone.Part((time, ev) => {
+       // Release previous notes
+       for (let otherEv of events) {
+         if (otherEv.time < ev.time) {
+           this.releaseNote(otherEv.note);
+         }
+       }
 
-       // Highlight note
-       ev.note.setState("playing");
-       Tone.Transport.scheduleOnce(() => ev.note.setState("idle"), time + Tone.Time(ev.note.value));
+       // Play note event
+       this.attackNote(ev.note, time, ev.velocity);
 
        // Call event at the end of the sequence
        if (events.indexOf(ev) == events.length - 1 && callback)
-           Tone.Transport.scheduleOnce(callback, time + Tone.Time(ev.note.value));
+           Tone.Draw.schedule(callback, "+" + ev.note.value);
 
-    }), events).start(Tone.now());
+    }, events).start();
   }
 }

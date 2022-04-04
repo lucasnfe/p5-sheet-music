@@ -9,12 +9,10 @@ class Note {
   static selectedColor = {r: 232, g: 110, b: 88 };
   static playingColor = {r: 232, g: 110, b: 88 };
 
-  static accidentalSize = 34;
-  static accidentalOffset = {x: -15, y: 2};
-
-  constructor(x, y, pitch, value, accidental = null) {
+  constructor(x, y, size, pitch, value, accidental = null) {
     this.x = x;
     this.y = y;
+    this.size = size;
     this.pitch = pitch;
     this.value = value;
     this.accidental = accidental;
@@ -81,19 +79,34 @@ class Note {
     }
   }
 
-  static drawAccidental(x, y, accidental, state) {
-    Note.fillColor(state);
-
-    noStroke();
-    textAlign(CENTER);
-    textSize(Note.accidentalSize);
+  static accidentalBoundingBox(x, y, font, size, accidental) {
+    let accidentalBox = {x: 0, y: 0, w: 0, h: 0};
 
     switch (accidental) {
       case "#":
-        text('', x + Note.accidentalOffset.x, y + Note.accidentalOffset.y);
+        accidentalBox = font.textBounds('', x, y, size);
         break;
       case "b":
-        text('', x + Note.accidentalOffset.x, y + Note.accidentalOffset.y);
+        accidentalBox = font.textBounds('', x, y, size);
+        break;
+    }
+
+    return accidentalBox;
+  }
+
+  static drawAccidental(x, y, size, accidental, state = "idle") {
+    Note.fillColor(state);
+
+    noStroke();
+    textSize(size);
+    textAlign(CENTER);
+
+    switch (accidental) {
+      case "#":
+        text('', x, y);
+        break;
+      case "b":
+        text('', x, y);
         break;
     }
   }
@@ -113,66 +126,64 @@ class Note {
 }
 
 class StemedNote extends Note {
-  static headSize = 40;
-  static stemHeight = 29.5;
-  static stemOffset = {x: 5.4, y: -1};
-
   constructor(x, y, pitch, value, accidental = null) {
     super(x, y, pitch, value, accidental);
   }
 
-  static drawStem(x, y, isUp = true, state = "idle") {
-    let orientation = isUp ? 1 : -1;
-
+  static drawStem(x, y, height, isUp = true, state = "idle") {
+    strokeCap(SQUARE);
     Note.strokeColor(state);
 
-    strokeCap(SQUARE);
-    line(x + StemedNote.stemOffset.x * orientation,
-         y + StemedNote.stemOffset.y * orientation,
-         x + StemedNote.stemOffset.x * orientation,
-         y + (StemedNote.stemOffset.y - StemedNote.stemHeight) * orientation);
+    const up = isUp ? 1 : -1;
+    line(x, y, x, y - height * up);
   }
 
   // Assume filled head
-  static drawHead(x, y, state) {
+  static drawHead(x, y, size, state) {
     Note.fillColor(state);
 
     noStroke();
     textAlign(CENTER);
-    textSize(StemedNote.headSize);
+    textSize(size);
     text('', x, y);
   }
 
-  static aabb(x, y, isUp, font) {
-    let bbox = font.textBounds('', x, y, StemedNote.headSize);
+  static headBoundingBox(x, y, font, size) {
+    let headBox = font.textBounds('', x, y, size);
+    return headBox;
+  }
+
+  static stemHeight(headHeight) {
+    const stemHeight = headHeight * 3;
+    return stemHeight;
+  }
+
+  static noteBoundingBox(x, y, font, size, isUp) {
+    const headBox = StemedNote.headBoundingBox(x, y, font, size);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
 
     if (isUp)
-      bbox.y = y + (StemedNote.stemOffset.y - StemedNote.stemHeight);
-    bbox.h = bbox.h/2 + StemedNote.stemHeight;
+      headBox.y -= stemHeight - headBox.h/2;
+    headBox.h += stemHeight - headBox.h/2;
 
-    return bbox;
+    return headBox;
   }
 }
 
 class StemedFlaggedNote extends StemedNote {
-  static flagSize = 34;
-  static flagOffset = {x: 0.5, y: 0};
-
   constructor(x, y, pitch, value, accidental = null) {
     super(x, y, pitch, value, accidental);
   }
 
-  static drawFlag(x, y, upSymbol, downSymbol, isUp = true, state = "idle") {
-    let symbol = isUp ? upSymbol : downSymbol;
-    let orientation = isUp ? 1 : -1;
-    x = x + StemedNote.stemOffset.x * orientation - StemedFlaggedNote.flagOffset.x;
-    y = y + (StemedNote.stemOffset.y - StemedNote.stemHeight + StemedFlaggedNote.flagOffset.y) * orientation;
+  static drawFlag(x, y, size, upSymbol, downSymbol, isUp = true, state = "idle") {
+    const symbol = isUp ? upSymbol : downSymbol;
+    const up = isUp ? 1 : -1;
 
     Note.fillColor(state);
 
     noStroke();
     textAlign(LEFT);
-    textSize(StemedFlaggedNote.flagSize);
+    textSize(size);
     text(symbol, x, y);
   }
 }
@@ -182,23 +193,26 @@ class WholeNote extends Note {
     super(x, y, pitch, "1n", accidental);
   }
 
-  static drawHead(x, y, state) {
+  static drawHead(x, y, size, state) {
     Note.fillColor(state);
 
     noStroke();
     textAlign(CENTER);
-    textSize(40);
+    textSize(size);
     text('', x, y);
   }
 
-  static aabb(x, y, font) {
-    let bbox = font.textBounds('', x, y, 40);
+  static noteBoundingBox(x, y, font, size) {
+    let bbox = font.textBounds('', x, y, size);
     return bbox;
   }
 
-  static draw(x, y, accidental = null, state = "idle") {
-    WholeNote.drawHead(x, y, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static draw(x, y, font, size, accidental = null, state = "idle") {
+    const headBox = WholeNote.noteBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+
+    WholeNote.drawHead(x, y, size, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }
 
@@ -207,19 +221,40 @@ class HalfNote extends StemedNote {
     super(x, y, pitch, "2n", accidental);
   }
 
-  static drawHead(x, y, state) {
+  static drawHead(x, y, size, state) {
     Note.fillColor(state);
 
     noStroke();
+    textSize(size);
     textAlign(CENTER);
-    textSize(40);
     text('', x, y);
   }
 
-  static draw(x, y, isUp = true, accidental = null, state = "idle") {
-    StemedNote.drawStem(x, y, isUp, state);
-    HalfNote.drawHead(x, y, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static headBoundingBox(x, y, font, size) {
+    let headBox = font.textBounds('', x, y, size);
+    return headBox;
+  }
+
+  static noteBoundingBox(x, y, font, size, isUp) {
+    const headBox = HalfNote.headBoundingBox(x, y, font, size);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
+
+    if (isUp)
+      headBox.y -= stemHeight - headBox.h/2;
+    headBox.h += stemHeight - headBox.h/2;
+
+    return headBox;
+  }
+
+  static draw(x, y, font, size, isUp = true, accidental = null, state = "idle") {
+    const up = isUp ? 1 : -1;
+    const headBox = HalfNote.headBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+    const stemHeight = HalfNote.stemHeight(headBox.h);
+
+    StemedNote.drawStem(x + headBox.w/2 * up, y, stemHeight, isUp, state);
+    HalfNote.drawHead(x, y, size, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }
 
@@ -228,10 +263,15 @@ class QuarterNote extends StemedNote {
     super(x, y, pitch, "4n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null, state = "idle") {
-    StemedNote.drawStem(x, y, isUp, state);
-    StemedNote.drawHead(x, y, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static draw(x, y, font, size, isUp = true, accidental = null, state = "idle") {
+    const up = isUp ? 1 : -1;
+    const headBox = StemedNote.headBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
+
+    StemedNote.drawStem(x + headBox.w/2 * up, y, stemHeight, isUp, state);
+    StemedNote.drawHead(x, y, size, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }
 
@@ -240,11 +280,18 @@ class EighthNote extends StemedFlaggedNote {
     super(x, y, pitch, "8n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null, state = "idle") {
-    StemedNote.drawStem(x, y, isUp, state);
-    StemedNote.drawHead(x, y, state);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static draw(x, y, font, size, isUp = true, accidental = null, state = "idle") {
+    const up = isUp ? 1 : -1;
+    const headBox = StemedNote.headBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
+
+    StemedNote.drawStem(x + headBox.w/2 * up, y, stemHeight, isUp, state);
+    StemedNote.drawHead(x, y, size, state);
+    StemedFlaggedNote.drawFlag(x + headBox.w/2 * up - 0.5,
+                               y - stemHeight * up, size,
+                               '', '', isUp, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }
 
@@ -253,11 +300,18 @@ class SixteenthNote extends StemedFlaggedNote {
     super(x, y, pitch, "16n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null, state = "idle") {
-    StemedNote.drawStem(x, y, isUp, state);
-    StemedNote.drawHead(x, y, state);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static draw(x, y, font, size, isUp = true, accidental = null, state = "idle") {
+    const up = isUp ? 1 : -1;
+    const headBox = StemedNote.headBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
+
+    StemedNote.drawStem(x + headBox.w/2 * up, y, stemHeight, isUp, state);
+    StemedNote.drawHead(x, y, size, state);
+    StemedFlaggedNote.drawFlag(x + headBox.w/2 * up - 0.5,
+                               y - stemHeight * up, size,
+                               '', '', isUp, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }
 
@@ -266,10 +320,17 @@ class ThirtySecondNote extends StemedFlaggedNote {
     super(x, y, pitch, "32n", accidental);
   }
 
-  static draw(x, y, isUp = true, accidental = null, state = "idle") {
-    StemedNote.drawStem(x, y, isUp, state);
-    StemedNote.drawHead(x, y, state);
-    StemedFlaggedNote.drawFlag(x, y, '', '', isUp, state);
-    Note.drawAccidental(x, y, accidental, state);
+  static draw(x, y, font, size, isUp = true, accidental = null, state = "idle") {
+    const up = isUp ? 1 : -1;
+    const headBox = StemedNote.headBoundingBox(x, y, font, size);
+    const accidentalBox = Note.accidentalBoundingBox(x, y, font, size, accidental);
+    const stemHeight = StemedNote.stemHeight(headBox.h);
+
+    StemedNote.drawStem(x + headBox.w/2 * up, y, stemHeight, isUp, state);
+    StemedNote.drawHead(x, y, size, state);
+    StemedFlaggedNote.drawFlag(x + headBox.w/2 * up - 0.5,
+                               y - stemHeight * up, size,
+                               '', '', isUp, state);
+    Note.drawAccidental(x - headBox.w/2 - accidentalBox.w/1.5, y, size, accidental, state);
   }
 }

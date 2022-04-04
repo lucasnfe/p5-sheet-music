@@ -18,16 +18,13 @@ class Staff {
 
     // Staff boundaries
     this.spaceHeight = staffConfig.spaceHeight;
-    this.horDrawableStart = this.x + this.clefOffset.x + this.clefSize + this.timeSignatureOffset.x + this.timeSignatureSize;
-    this.horDrawableEnd   = this.x + this.width;
-    this.verDrawableStart = this.y - 1.5 * this.spaceHeight;
-    this.verDrawableEnd   = this.y + (this.nLines + 1) * this.spaceHeight;
+    this.updateBoundaries();
 
     this.notes = [];
     this.bars = [];
   }
 
-  draw() {
+  draw(font) {
     // Draw clef
     this.drawClef();
 
@@ -44,7 +41,7 @@ class Staff {
 
     // Draw Notes
     for (let note of this.notes) {
-      this.drawNote(note.x, note.y, note.value, note.accidental, note.state);
+      this.drawNote(note.x, note.y, font, note.size, note.value, note.accidental, note.state);
     }
   }
 
@@ -91,7 +88,7 @@ class Staff {
     line(x, this.y, x, this.y + this.spaceHeight * (this.nLines - 1));
   }
 
-  drawNote(x, y, value, accidental, state) {
+  drawNote(x, y, font, size, value, accidental, state) {
     // Make sure position is in staff
     if (!this.isInStaff(x, y))
       return;
@@ -116,27 +113,27 @@ class Staff {
 
     switch (value) {
       case "1n":
-        WholeNote.draw(x, staffPos, accidental, state);
+        WholeNote.draw(x, staffPos, font, size, accidental, state);
         break;
       case "2n":
-        HalfNote.draw(x, staffPos, isUp, accidental, state);
+        HalfNote.draw(x, staffPos, font, size, isUp, accidental, state);
         break;
       case "4n":
-        QuarterNote.draw(x, staffPos, isUp, accidental, state);
+        QuarterNote.draw(x, staffPos, font, size, isUp, accidental, state);
         break;
       case "8n":
-        EighthNote.draw(x, staffPos, isUp, accidental, state);
+        EighthNote.draw(x, staffPos, font, size, isUp, accidental, state);
         break;
       case "16n":
-        SixteenthNote.draw(x, staffPos, isUp, accidental, state);
+        SixteenthNote.draw(x, staffPos, font, size, isUp, accidental, state);
         break;
       case "32n":
-        ThirtySecondNote.draw(x, staffPos, isUp, accidental, state);
+        ThirtySecondNote.draw(x, staffPos, font, size, isUp, accidental, state);
         break;
     }
   }
 
-  addNote(x, y, value, accidental) {
+  addNote(x, y, size, value, accidental) {
     // Make sure position is in staff
     if (!this.isInStaff(x, y))
       return;
@@ -152,8 +149,10 @@ class Staff {
     }
 
     let pitch = staff.getPitchFromY(y);
-    let note = new Note(x, y, pitch, value, accidental);
+    let note = new Note(x, y, size, pitch, value, accidental);
     this.notes.splice(low, 0, note);
+
+    return note;
   }
 
   removeNote(note) {
@@ -191,6 +190,13 @@ class Staff {
 
   sortNotes() {
     this.notes.sort((a,b) => { return a.x - b.x });
+  }
+
+  updateBoundaries() {
+    this.horDrawableStart = this.x + this.clefOffset.x + this.clefSize + this.timeSignatureOffset.x + this.timeSignatureSize;
+    this.horDrawableEnd   = this.x + this.width;
+    this.verDrawableStart = this.y - 1.5 * this.spaceHeight;
+    this.verDrawableEnd   = this.y + (this.nLines + 1) * this.spaceHeight;
   }
 
   isInHorizontalBoundaries(x) {
@@ -290,10 +296,10 @@ class Staff {
       let bbox = null;
       switch (note.value) {
         case "1n":
-          bbox = WholeNote.aabb(note.x, note.y, font);
+          bbox = WholeNote.noteBoundingBox(note.x, note.y, font);
           break;
         default:
-          bbox = StemedNote.aabb(note.x, note.y, isUp, font);
+          bbox = StemedNote.noteBoundingBox(note.x, note.y, font, note.size, isUp);
           break;
       }
 
